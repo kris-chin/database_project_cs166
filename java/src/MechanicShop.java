@@ -554,8 +554,15 @@ public class MechanicShop{
 		
 	}
 	
-	public static void ListCustomersWithMoreThan20Cars(MechanicShop esql){//7
-		
+	public static void ListCustomersWithMoreThan20Cars(MechanicShop esql) throws SQLException{//7
+		try {
+		esql.executeQueryAndPrintResult("SELECT fname, lname " + 
+						"FROM Customer C " +
+						"WHERE 20 < (SELECT COUNT(O.customer_id) " +
+							    "FROM OWNS O " +
+							    "WHERE C.id = O.customer_id);");
+		}
+		catch(SQLException e) { System.out.println("Error With Request: " + e.toString()); }
 	}
 	
 	public static void ListCarsBefore1995With50000Milles(MechanicShop esql){//8
