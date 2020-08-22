@@ -23,6 +23,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 /**
  * This class defines a simple embedded SQL utility class that is designed to
@@ -328,6 +329,34 @@ public class MechanicShop{
 		try	{ esql.executeUpdate("INSERT INTO Customer (id, fname, lname, phone, address) VALUES (" + q + ");"); }
 		catch (SQLException e) { System.out.println("Invalid Input: " + e.toString()); }
 	}
+
+	public static List<String> AddAndReturnCustomer(MechanicShop esql) throws SQLException {
+		/* VARIABLES USED: CUSTOMER */
+		int id = 0;
+		String fname = "",
+		        lname = "",
+		         phone = "",
+				  address = "",
+				   catchTest = "";
+		Scanner input = new Scanner(System.in);
+		List<String> record = new ArrayList<String>();
+		
+		/* VARIABLE INITIALIZATION <:NOTES:> *catchTest variable used after nextInt to catch '\n' (hooray for brute force)* */
+		System.out.print("Enter Customer ID: ");         id = input.nextInt(); catchTest = input.nextLine(); record.add(Integer.toString(id));
+		System.out.print("Enter Customer First Name: "); fname = input.nextLine(); record.add(fname);
+		System.out.print("Enter Customer Last Name: ");	 lname = input.nextLine(); record.add(lname);
+		System.out.print("Enter Customer Phone #: ");    phone = input.nextLine(); record.add(phone);
+		System.out.print("Enter Customer Address: ");    address = input.nextLine(); record.add(address);
+		
+		/* PSQL QUERY STRING */
+		String q = Integer.toString(id) + ',' + '\'' + fname + '\'' + ',' + '\'' + lname + '\'' + ',' + '\'' + phone + '\'' + ',' + '\'' + address + '\'';
+		
+		/* PSQL CUSTOMER TABLE DATA INSERTION */
+		try	{ esql.executeUpdate("INSERT INTO Customer (id, fname, lname, phone, address) VALUES (" + q + ");"); }
+		catch (SQLException e) { System.out.println("Invalid Input: " + e.toString()); }
+
+		return record;
+	}
 	
 	public static void AddMechanic(MechanicShop esql) throws SQLException {//2
 		/* VARIABLES USED: MECHANIC */
@@ -373,8 +402,147 @@ public class MechanicShop{
 		try { esql.executeUpdate("INSERT INTO Car (vin, make, model, year) VALUES (" + q + ");"); }
 		catch(SQLException e) { System.out.println("Invalid Input: " + e.toString()); }
 	}
+
+	public static List<String> AddAndReturnCar(MechanicShop esql) throws SQLException {
+		/* VARIABLES USED: CAR */
+		String vin = "",
+				make = "",
+				 model = "";
+		int year = 0;
+		Scanner input = new Scanner(System.in);
+		List<String> record = new ArrayList<String>();
+
+		/* VARIABLE INITIALIZATION <:NOTES:> */
+		System.out.print("Enter Car VIN#: ");  vin = input.nextLine(); record.add(vin);
+		System.out.print("Enter Car Make: ");  make = input.nextLine(); record.add(make);
+		System.out.print("Enter Car Model: "); model = input.nextLine(); record.add(model);
+		System.out.print("Enter Car Year: ");  year = input.nextInt(); record.add(Integer.toString(year));
+
+		/* PSQL QUERY STRING */
+		String q = "\'" + vin + "\',\'" + make + "\',\'" + model + "\'," + Integer.toString(year); 
+
+		/* PSQL CAR DATA INSERTION */
+		try { esql.executeUpdate("INSERT INTO Car (vin, make, model, year) VALUES (" + q + ");"); }
+		catch(SQLException e) { System.out.println("Invalid Input: " + e.toString()); }
+		
+		return record;
+	}
 	
-	public static void InsertServiceRequest(MechanicShop esql){//4
+	public static void InsertServiceRequest(MechanicShop esql) throws SQLException{//4
+		//VARIABLES: Customer
+		String lname = "";
+		String catchTest;
+
+		//VARIABLES: UI;
+		Scanner input = new Scanner (System.in);
+		int choiceInput; //used in number-choices;
+		List<List<String>> customerList = null;
+		List<List<String>> carList = null;
+		int c_id; String vin = null;
+
+		//VARIABLES: Service Request
+		int rid;
+		String date = null;
+		int odometer; //must be positive
+		String complain = null;
+ 
+		//Initialize Variables
+		System.out.print("Enter Customer Last Name: "); lname = input.nextLine();
+
+		//Run Customer Query
+		try { customerList = esql.executeQueryAndReturnResult("SELECT * FROM Customer WHERE lname = \'" + lname + "\';"); }
+		catch(SQLException e) { System.out.println("Invalid Input: " + e.toString()); }
+
+		//Acquire Customer Data
+		if (customerList != null){ //if the query returned a List<List<String>>
+			switch ( customerList.size() ){
+
+				case 0: //no customer shows up. proceed to add a customer
+					System.out.print("There is no customer with the last name of \'" + lname + "\'. \nWould you like to initiate Add Customer procedure? <1 - Yes/ 2 - No>\n");
+					
+					do {
+						choiceInput = readChoice();
+						switch (choiceInput){
+							case 1:
+								c_id = Integer.parseInt(esql.AddAndReturnCustomer(esql).get(0));
+								break;
+							case 2: return; //just exit
+							default: continue;
+						}
+					} while (true);
+					
+				case 1: //only one customer shows up. 
+					c_id = Integer.parseInt(customerList.get(0).get(0));
+					break;
+				default: //more than one customer shows up. prompt for which customer;
+					System.out.println("Select a customer:");
+					for (int i = 0; i < customerList.size(); i ++){ //print customers
+						String ln = customerList.get(i).get(2).replaceAll("\\s",""); //remove whitespace with regex
+						String fn = customerList.get(i).get(1).replaceAll("\\s",""); //remove whitespace with regex
+						System.out.println(Integer.toString(i) + ". " + ln + ", " + fn);
+					}
+					//Wait for userinput to choose a customer
+					do {choiceInput = readChoice();
+						if ( choiceInput < customerList.size() & ( choiceInput > -1) ){break;}
+					} while (true);
+					c_id = Integer.parseInt(customerList.get(choiceInput).get(0));
+					
+					break;
+			}
+
+			//Run Car Query.
+			try { carList = esql.executeQueryAndReturnResult("SELECT * FROM Owns WHERE customer_id = \'" + c_id + "\';"); }
+			catch(SQLException e) { System.out.println("Invalid Input: " + e.toString()); }
+
+			//Acquire Car Data (NOTE: this is very similar to the procedure for getting customer data)
+			if (carList != null){ //if the query returned a List<List<String>>
+				switch ( carList.size() ) {
+					case 0: //no cars showed up
+						System.out.print("There is no cars associated with this customer.\n Would you like to initiate Add Car procedure? <1 - Yes/ 2 - No>\n");
+						do {
+							choiceInput = readChoice();
+							switch (choiceInput){
+								case 1:
+									vin = esql.AddAndReturnCar(esql).get(2);
+									break;
+								case 2: return; //just exit
+								default: continue;
+							}
+						} while (true);
+					case 1: //only one car showed up
+						vin = carList.get(0).get(2);
+						break;
+					default: //multiple cars showed up
+
+						//we might need to add a display for the make, model, and year of each car
+
+						System.out.println("Select a car VIN:");
+						for (int i = 0; i < carList.size(); i ++){ //print cars
+							String car_vin = carList.get(i).get(2).replaceAll("\\s",""); //remove whitespace with regex
+							
+							System.out.println(Integer.toString(i) + ". VIN: " + car_vin);
+						}
+						//Wait for userinput to choose a car
+						do {choiceInput = readChoice();
+							if ( choiceInput < carList.size() & ( choiceInput > -1) ){break;}
+						} while (true);
+						vin = carList.get(choiceInput).get(2);
+					
+						break;
+				}
+			}
+
+			//Prompt for Query Information
+			System.out.print("Enter Request ID #: ");  rid = input.nextInt(); catchTest = input.nextLine();
+			System.out.print("Enter Date (MM/DD/YYYY): ");  date = input.nextLine();
+			System.out.print("Enter Odometer Reading: "); odometer = input.nextInt(); catchTest = input.nextLine();
+			System.out.print("Enter Complaint: ");  complain = input.nextLine();
+			//Run Insertion Query for Service Request
+			String q = "\'" + rid + "\',\'" + c_id + "\',\'"  + vin + "\',\'"+ date + "\',\'" + odometer + "\',\'" + complain + "\'"; 
+			/* PSQL CAR DATA INSERTION */
+			try { esql.executeUpdate("INSERT INTO Service_Request (rid, customer_id, car_vin, date, odometer, complain) VALUES (" + q + ");"); }
+			catch(SQLException e) { System.out.println("Invalid Input: " + e.toString()); }
+		}
 		
 	}
 	
