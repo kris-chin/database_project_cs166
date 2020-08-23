@@ -268,7 +268,7 @@ public class MechanicShop{
 					case 5: CloseServiceRequest(esql); break;
 					case 6: ListCustomersWithBillLessThan100(esql); break;
 					case 7: ListCustomersWithMoreThan20Cars(esql); break;
-					case 8: ListCarsBefore1995With50000Milles(esql); break;
+					case 8: ListCarsBefore1995With50000Miles(esql); break;
 					case 9: ListKCarsWithTheMostServices(esql); break;
 					case 10: ListCustomersInDescendingOrderOfTheirTotalBill(esql); break;
 					case 11: keepon = false; break;
@@ -363,31 +363,6 @@ public class MechanicShop{
 		/* PSQL CAR DATA INSERTION */
 		try { esql.executeUpdate("INSERT INTO Car (vin, make, model, year) VALUES (" + GetCarInfo() + ");"); }
 		catch(SQLException e) { System.out.println("Invalid Input: " + e.toString()); }
-	}
-
-	public static List<String> AddAndReturnCar(MechanicShop esql) throws SQLException {
-		/* VARIABLES USED: CAR */
-		String vin = "",
-				make = "",
-				 model = "";
-		int year = 0;
-		Scanner input = new Scanner(System.in);
-		List<String> record = new ArrayList<String>();
-
-		/* VARIABLE INITIALIZATION <:NOTES:> */
-		System.out.print("Enter Car VIN#: ");  vin = input.nextLine(); record.add(vin);
-		System.out.print("Enter Car Make: ");  make = input.nextLine(); record.add(make);
-		System.out.print("Enter Car Model: "); model = input.nextLine(); record.add(model);
-		System.out.print("Enter Car Year: ");  year = input.nextInt(); record.add(Integer.toString(year));
-
-		/* PSQL QUERY STRING */
-		String q = "\'" + vin + "\',\'" + make + "\',\'" + model + "\'," + Integer.toString(year); 
-
-		/* PSQL CAR DATA INSERTION */
-		try { esql.executeUpdate("INSERT INTO Car (vin, make, model, year) VALUES (" + q + ");"); }
-		catch(SQLException e) { System.out.println("Invalid Input: " + e.toString()); }
-		
-		return record;
 	}
 	
 	public static void InsertServiceRequest(MechanicShop esql) throws SQLException{//4
@@ -527,8 +502,8 @@ public class MechanicShop{
 	 * 			SELECT fname, lname
 	 * 			FROM Customer C
 	 * 			WHERE 20 < (SELECT COUNT(O.customer_id)
-	 * 						FROM OWNS O
-	 * 						WHERE C.id = O.customer_id).
+	 * 				    FROM OWNS O
+	 * 				    WHERE C.id = O.customer_id).
 	 * 			Line 2) If the pSQL query fails the user will be prompted with "Error with request" plus the pSQL
 	 * 			error message. Otherwise, the function displays all customers that fit the relational query criteria.
 	*/
@@ -537,8 +512,26 @@ public class MechanicShop{
 		catch(SQLException e) { System.out.println("Error With Request: " + e.toString()); }
 	}
 	
-	public static void ListCarsBefore1995With50000Milles(MechanicShop esql){//8
-		
+	/* LISTCARSBEFORE1995WITH50000Miles FUNCTION DEFINITION
+	 * 	Function:	ListCarsBefore1995With50000Miles
+	 * 	Author: 	Dominic Renales
+	 * 	Input: 		MechanicShop esql
+	 * 	Output: 	void
+	 * 	Summary: 	Function that executes the pSQL query to print the make, model, and year (before 1995) of all cars with less than 50000 miles and 
+	 * 	Code Flow:
+	 * 			Line 1) Function tries to execute and print the results of the following pSQL query:
+	 * 				SELECT C.make, C.model, C.year
+	 * 				FROM Car C, Service_Request S
+	 * 				WHERE C.vin = S.car_vin
+	 * 				AND C.year < 1995
+	 * 				AND S.odometer < 50000
+	 * 			Line 2) If the pSQL query fails the user will be prompted with " Error with request" plus the pSQL 
+	 * 			error message. Otherwise, the function displays make, model, year of all cars before 1995 with less than
+	 * 			50000 miles on the odometer.
+	 */
+	public static void ListCarsBefore1995With50000Miles(MechanicShop esql) throws SQLException {//8
+		try { esql.executeQueryAndPrintResult("SELECT C.make, C.model, C.year FROM Car C, Service_Request S WHERE C.vin = S.car_vin AND C.year < 1995 AND S.odometer < 50000;"); }
+		catch(SQLException e) { System.out.println("Error With Request: " + e.toString()); }
 	}
 	
 	public static void ListKCarsWithTheMostServices(MechanicShop esql){//9
@@ -546,13 +539,15 @@ public class MechanicShop{
 		
 	}
 	
-	public static void ListCustomersInDescendingOrderOfTheirTotalBill(MechanicShop esql){//9
+	public static void ListCustomersInDescendingOrderOfTheirTotalBill(MechanicShop esql){//10
 		//
 		
 	}
 	
-	/* AUXILLARY FUNCTIONS FOR I/O */
-
+	/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+	/* Helper Functions Written by: Dominic Renales                                                                  */
+	/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+	
 	/* GETCUSTOMERINFO FUNCTION DESCRIPTION
 	 *	Function: 	GetCustomerInfo
 	 *	Author: 	Dominic Renales
@@ -649,5 +644,33 @@ public class MechanicShop{
 		System.out.print("Enter Car Year: ");  year = input.nextInt();
 
 		return "\'" + vin + "\',\'" + make + "\',\'" + model + "\'," + Integer.toString(year);
+	}
+	
+	/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+	/* Helper Functions Written By: Krischin Layon                                                                   */
+	/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+	public static List<String> AddAndReturnCar(MechanicShop esql) throws SQLException {
+		/* VARIABLES USED: CAR */
+		String vin = "",
+				make = "",
+				 model = "";
+		int year = 0;
+		Scanner input = new Scanner(System.in);
+		List<String> record = new ArrayList<String>();
+
+		/* VARIABLE INITIALIZATION <:NOTES:> */
+		System.out.print("Enter Car VIN#: ");  vin = input.nextLine(); record.add(vin);
+		System.out.print("Enter Car Make: ");  make = input.nextLine(); record.add(make);
+		System.out.print("Enter Car Model: "); model = input.nextLine(); record.add(model);
+		System.out.print("Enter Car Year: ");  year = input.nextInt(); record.add(Integer.toString(year));
+
+		/* PSQL QUERY STRING */
+		String q = "\'" + vin + "\',\'" + make + "\',\'" + model + "\'," + Integer.toString(year); 
+
+		/* PSQL CAR DATA INSERTION */
+		try { esql.executeUpdate("INSERT INTO Car (vin, make, model, year) VALUES (" + q + ");"); }
+		catch(SQLException e) { System.out.println("Invalid Input: " + e.toString()); }
+		
+		return record;
 	}
 }
