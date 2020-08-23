@@ -330,76 +330,21 @@ public class MechanicShop{
 		catch (SQLException e) { System.out.println("Invalid Input: " + e.toString()); }
 	}
 
-	public static List<String> AddAndReturnCustomer(MechanicShop esql) throws SQLException {
-		/* VARIABLES USED: CUSTOMER */
-		int id = 0;
-		String fname = "",
-		        lname = "",
-		         phone = "",
-				  address = "",
-				   catchTest = "";
-		Scanner input = new Scanner(System.in);
-		List<String> record = new ArrayList<String>();
-		
-		/* VARIABLE INITIALIZATION <:NOTES:> *catchTest variable used after nextInt to catch '\n' (hooray for brute force)* */
-		System.out.print("Enter Customer ID: ");         id = input.nextInt(); catchTest = input.nextLine(); record.add(Integer.toString(id));
-		System.out.print("Enter Customer First Name: "); fname = input.nextLine(); record.add(fname);
-		System.out.print("Enter Customer Last Name: ");	 lname = input.nextLine(); record.add(lname);
-		System.out.print("Enter Customer Phone #: ");    phone = input.nextLine(); record.add(phone);
-		System.out.print("Enter Customer Address: ");    address = input.nextLine(); record.add(address);
-		
-		/* PSQL QUERY STRING */
-		String q = Integer.toString(id) + ',' + '\'' + fname + '\'' + ',' + '\'' + lname + '\'' + ',' + '\'' + phone + '\'' + ',' + '\'' + address + '\'';
-		
+	public static void AddCustomer(MechanicShop esql) throws SQLException {//1
 		/* PSQL CUSTOMER TABLE DATA INSERTION */
-		try	{ esql.executeUpdate("INSERT INTO Customer (id, fname, lname, phone, address) VALUES (" + q + ");"); }
+		try	{ esql.executeUpdate("INSERT INTO Customer (id, fname, lname, phone, address) VALUES (" + GetCustomerInfo() + ");"); }
 		catch (SQLException e) { System.out.println("Invalid Input: " + e.toString()); }
-
-		return record;
 	}
 	
 	public static void AddMechanic(MechanicShop esql) throws SQLException {//2
-		/* VARIABLES USED: MECHANIC */
-		int id = 0,
-			 years = 0;
-		String fname = "",
-				lname = "",
-				 catchTest = "";
-		Scanner input = new Scanner(System.in);
-		
-		/* VARIABLE INITIALIZATION <:NOTES:> refer to catchTest notes in Customer comment */
-		System.out.print("Enter Mechanic ID: ");                  id = input.nextInt(); catchTest = input.nextLine();
-		System.out.print("Enter Mechanic First Name: ");          fname = input.nextLine();
-		System.out.print("Enter Mechanic Last Name: ");           lname = input.nextLine();
-		System.out.print("Enter Mechanic Years of Experience: "); years = input.nextInt();
-		
-		/* PSQL QUERY STRING */
-		String q = Integer.toString(id) + ",\'" + fname + "\',\'" + lname + "\'," + years;
-
 		/* PSQL MECHANIC DATA INSERTION */
-		try { esql.executeUpdate("INSERT INTO Mechanic (id, fname, lname, experience) VALUES (" + q + ");"); }
+		try { esql.executeUpdate("INSERT INTO Mechanic (id, fname, lname, experience) VALUES (" + GetMechanicInfo() + ");"); }
 		catch(SQLException e) { System.out.println("Invalid Input: " + e.toString()); }
 	}
 	
 	public static void AddCar(MechanicShop esql) throws SQLException {//3
-		/* VARIABLES USED: CAR */
-		String vin = "",
-				make = "",
-				 model = "";
-		int year = 0;
-		Scanner input = new Scanner(System.in);
-
-		/* VARIABLE INITIALIZATION <:NOTES:> */
-		System.out.print("Enter Car VIN#: ");  vin = input.nextLine();
-		System.out.print("Enter Car Make: ");  make = input.nextLine();
-		System.out.print("Enter Car Model: "); model = input.nextLine();
-		System.out.print("Enter Car Year: ");  year = input.nextInt();
-
-		/* PSQL QUERY STRING */
-		String q = "\'" + vin + "\',\'" + make + "\',\'" + model + "\'," + Integer.toString(year); 
-
 		/* PSQL CAR DATA INSERTION */
-		try { esql.executeUpdate("INSERT INTO Car (vin, make, model, year) VALUES (" + q + ");"); }
+		try { esql.executeUpdate("INSERT INTO Car (vin, make, model, year) VALUES (" + GetCarInfo() + ");"); }
 		catch(SQLException e) { System.out.println("Invalid Input: " + e.toString()); }
 	}
 
@@ -579,4 +524,60 @@ public class MechanicShop{
 		
 	}
 	
+	/* AUXILLARY FUNCTIONS FOR I/O */
+
+	public static String GetCustomerInfo() {
+		/* VARIABLES USED: CUSTOMER */
+		int id = 0;
+		String fname = "",
+		        lname = "",
+		         phone = "",
+				  address = "",
+				   catchTest = "";
+		Scanner input = new Scanner(System.in);
+		
+		/* VARIABLE INITIALIZATION <:NOTES:> *catchTest variable used after nextInt to catch '\n' (hooray for brute force)* */
+		System.out.print("Enter Customer ID: ");         id = input.nextInt(); catchTest = input.nextLine();
+		System.out.print("Enter Customer First Name: "); fname = input.nextLine();
+		System.out.print("Enter Customer Last Name: ");	 lname = input.nextLine();
+		System.out.print("Enter Customer Phone #: ");    phone = input.nextLine();
+		System.out.print("Enter Customer Address: ");    address = input.nextLine();
+
+		return Integer.toString(id) + ',' + '\'' + fname + '\'' + ',' + '\'' + lname + '\'' + ',' + '\'' + phone + '\'' + ',' + '\'' + address + "\'";
+	}
+
+	public static String GetMechanicInfo() {
+		/* VARIABLES USED: MECHANIC */
+		int id = 0,
+			 years = 0;
+		String fname = "",
+				lname = "",
+				 catchTest = "";
+		Scanner input = new Scanner(System.in);
+		
+		/* VARIABLE INITIALIZATION <:NOTES:> refer to catchTest notes in Customer comment */
+		System.out.print("Enter Mechanic ID: ");                  id = input.nextInt(); catchTest = input.nextLine();
+		System.out.print("Enter Mechanic First Name: ");          fname = input.nextLine();
+		System.out.print("Enter Mechanic Last Name: ");           lname = input.nextLine();
+		System.out.print("Enter Mechanic Years of Experience: "); years = input.nextInt();
+
+		return Integer.toString(id) + ",\'" + fname + "\',\'" + lname + "\'," + years;
+	}
+
+	public static String GetCarInfo() {
+		/* VARIABLES USED: CAR */
+		String vin = "",
+				make = "",
+				 model = "";
+		int year = 0;
+		Scanner input = new Scanner(System.in);
+
+		/* VARIABLE INITIALIZATION <:NOTES:> */
+		System.out.print("Enter Car VIN#: ");  vin = input.nextLine();
+		System.out.print("Enter Car Make: ");  make = input.nextLine();
+		System.out.print("Enter Car Model: "); model = input.nextLine();
+		System.out.print("Enter Car Year: ");  year = input.nextInt();
+
+		return "\'" + vin + "\',\'" + make + "\',\'" + model + "\'," + Integer.toString(year);
+	}
 }
