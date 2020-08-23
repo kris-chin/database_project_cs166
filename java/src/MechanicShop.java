@@ -305,31 +305,6 @@ public class MechanicShop{
 		return input;
 	}//end readChoice
 	
-	public static void AddCustomer(MechanicShop esql) throws SQLException {//1
-		/* VARIABLES USED: CUSTOMER */
-		int id = 0;
-		String fname = "",
-		        lname = "",
-		         phone = "",
-				  address = "",
-				   catchTest = "";
-		Scanner input = new Scanner(System.in);
-		
-		/* VARIABLE INITIALIZATION <:NOTES:> *catchTest variable used after nextInt to catch '\n' (hooray for brute force)* */
-		System.out.print("Enter Customer ID: ");         id = input.nextInt(); catchTest = input.nextLine();
-		System.out.print("Enter Customer First Name: "); fname = input.nextLine();
-		System.out.print("Enter Customer Last Name: ");	 lname = input.nextLine();
-		System.out.print("Enter Customer Phone #: ");    phone = input.nextLine();
-		System.out.print("Enter Customer Address: ");    address = input.nextLine();
-		
-		/* PSQL QUERY STRING */
-		String q = Integer.toString(id) + ',' + '\'' + fname + '\'' + ',' + '\'' + lname + '\'' + ',' + '\'' + phone + '\'' + ',' + '\'' + address + '\'';
-		
-		/* PSQL CUSTOMER TABLE DATA INSERTION */
-		try	{ esql.executeUpdate("INSERT INTO Customer (id, fname, lname, phone, address) VALUES (" + q + ");"); }
-		catch (SQLException e) { System.out.println("Invalid Input: " + e.toString()); }
-	}
-	
 	/* ADD CUSTOMER FUNCTION DESCRIPTION
 	 *	Function: 	AddCustomer
 	 *	Author: 	Dominic Renales
