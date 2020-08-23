@@ -365,6 +365,12 @@ public class MechanicShop{
 		catch(SQLException e) { System.out.println("Invalid Input: " + e.toString()); }
 	}
 	
+	/* InsertServiceRequest FUNCTION DESCRIPTION
+	 *	Function: 	InsertServiceRequest
+	 *	Author: 	Krischin Layon
+	 *	Input:		MechanicShop esql
+	 * 	Output:		void
+	*/
 	public static void InsertServiceRequest(MechanicShop esql) throws SQLException{//4
 		//VARIABLES: Customer
 		String lname = "";
@@ -375,7 +381,7 @@ public class MechanicShop{
 		int choiceInput; //used in number-choices;
 		List<List<String>> customerList = null;
 		List<List<String>> carList = null;
-		int c_id; String vin = null;
+		int c_id = -1; String vin = null;
 
 		//VARIABLES: Service Request
 		int rid;
@@ -406,8 +412,9 @@ public class MechanicShop{
 							case 2: return; //just exit
 							default: continue;
 						}
-					} while (true);
-					
+					} while (c_id == -1);
+
+					break;
 				case 1: //only one customer shows up. 
 					c_id = Integer.parseInt(customerList.get(0).get(0));
 					break;
@@ -440,14 +447,20 @@ public class MechanicShop{
 							choiceInput = readChoice();
 							switch (choiceInput){
 								case 1:
-									vin = esql.AddAndReturnCar(esql).get(2);
+									vin = esql.AddAndReturnCar(esql).get(0);
+
+									//TODO: also add the car to "owns"
+
+
 									break;
 								case 2: return; //just exit
 								default: continue;
 							}
-						} while (true);
+							
+						} while (vin == null );
+						break;
 					case 1: //only one car showed up
-						vin = carList.get(0).get(2);
+						vin = carList.get(0).get(0);
 						break;
 					default: //multiple cars showed up
 
@@ -455,7 +468,7 @@ public class MechanicShop{
 
 						System.out.println("Select a car VIN:");
 						for (int i = 0; i < carList.size(); i ++){ //print cars
-							String car_vin = carList.get(i).get(2).replaceAll("\\s",""); //remove whitespace with regex
+							String car_vin = carList.get(i).get(0).replaceAll("\\s",""); //remove whitespace with regex
 							
 							System.out.println(Integer.toString(i) + ". VIN: " + car_vin);
 						}
@@ -463,11 +476,12 @@ public class MechanicShop{
 						do {choiceInput = readChoice();
 							if ( choiceInput < carList.size() & ( choiceInput > -1) ){break;}
 						} while (true);
-						vin = carList.get(choiceInput).get(2);
+						vin = carList.get(choiceInput).get(0);
 					
 						break;
 				}
 			}
+			
 
 			//Prompt for Query Information
 			System.out.print("Enter Request ID #: ");  rid = input.nextInt(); catchTest = input.nextLine();
@@ -482,12 +496,104 @@ public class MechanicShop{
 		}
 		
 	}
-	
+	/* CloseServiceRequest FUNCTION DESCRIPTION
+	 *	Function: 	CloseServiceRequest
+	 *	Author: 	Krischin Layon
+	 *	Input:		MechanicShop esql
+	 * 	Output:		void
+	*/
 	public static void CloseServiceRequest(MechanicShop esql) throws Exception{//5
+		//VARIABLES: existing request
+		int rid; int mid; List<List<String>> record = null;
+
+		//VARIABLES: closing request
+		String date; int wid;
+		String comment; int bill;
+
+		String catchTest;
+		Scanner input = new Scanner(System.in);
 		
+		//Given an RID
+		System.out.print("Enter Request ID #: ");  rid = input.nextInt(); catchTest = input.nextLine();
+		//And a mechanic ID
+		System.out.print("Enter Mechanic ID #: "); mid = input.nextInt(); catchTest = input.nextLine();
+		
+		//(check if both IDs are valid)
+		/* 
+		SELECT
+			Service_Request.rid,
+			Mechanic.id
+		FROM
+			Service_Request, Mechanic
+		WHERE
+			Service_Request.rid = " + Integer.toString(rid) + "
+			AND
+			Mechanic.id = " + Integer.toString(mid) + ";"
+		*/
+		try {record = esql.executeQueryAndReturnResult("SELECT Service_Request.rid, Service_Request.date, Mechanic.id FROM Service_Request, Mechanic WHERE Service_Request.rid = " + Integer.toString(rid) + " AND Mechanic.id = " + Integer.toString(mid) + ";"); }
+		catch(SQLException e){ System.out.println("Invalid Input: " + e.toString()); }
+
+		System.out.println(record);
+		//TODO: test if RID was already closed (not specified in prompt, but probably implied)
+		
+		if (record.size() == 1){ //only 1 record should show up, which contains a real rid and its date, additionally, a real mechanic id
+			//create a closing record
+
+			//prompt for date
+			System.out.print("Enter Request Closing Date (YYYY-MM-DD): "); date = input.nextLine();
+			//check if inputed date is after the request's opening date
+			if ( Integer.parseInt(date.replaceAll("\\-","")) > Integer.parseInt(record.get(0).get(1).replaceAll("\\-","")) ){
+				//convert date into MM/DD/YYYY format
+				//date = 
+				
+				//prompt for wid
+				System.out.print("Enter closing request wid: "); wid = input.nextInt(); catchTest = input.nextLine();
+				//prompt for comment
+				System.out.print("Enter comment: "); comment = input.nextLine();
+				//prompt for bill
+				System.out.print("Enter bill: "); bill = input.nextInt(); catchTest = input.nextLine();
+		
+				if (bill > 0){
+					//run query
+					String q = wid + "," + rid + ", " + mid + ", \'" + date + "\', \'" + comment + "\'," + bill;
+					
+					try{esql.executeUpdate("INSERT INTO Closed_Request (wid, rid, mid, date, comment, bill) VALUES (" + q + ");");}
+					catch(SQLException e) {System.out.println("Invalid Input: " + e.toString()); }
+				
+				}
+			}  else {
+				System.out.println("This is an invalid date.");
+			}
+
+		}
+
 	}
-	
+	/* ListCustomersWithBillLessThan100 FUNCTION DESCRIPTION
+	 *	Function: 	ListCustomersWithBillLessThan100
+	 *	Author: 	Krischin Layon
+	 *	Input:		MechanicShop esql
+	 * 	Output:		void
+	*/
 	public static void ListCustomersWithBillLessThan100(MechanicShop esql){//6
+		try {
+			//the prompt asks for both "date, comment & bill" as well as "customers". so i will be doing both
+			//we need to remove the whitespace in the names when using this function
+			//SQL:
+			/*SELECT
+				Closed_Request.date,
+				Closed_Request.bill, 
+				Closed_Request.comment, 
+				Customer.fname, 
+				Customer.lname 
+			FROM Customer 
+				FULL JOIN Service_Request ON Customer.id = Service_Request.customer_id
+				FULL JOIN Closed_Request ON Closed_Request.rid = Service_Request.rid
+			WHERE  Closed_Request.bill < 100;
+			*/
+			esql.executeQueryAndPrintResult("SELECT Closed_Request.date, Closed_Request.bill, Closed_Request.comment, Customer.fname, Customer.lname FROM Customer FULL JOIN Service_Request ON Customer.id = Service_Request.customer_id FULL JOIN Closed_Request ON Closed_Request.rid = Service_Request.rid WHERE  Closed_Request.bill < 100;");
+		} catch (SQLException e){
+			System.out.println("Error with Request: " + e.toString());
+		}
 		
 	}
 	
@@ -533,14 +639,76 @@ public class MechanicShop{
 		try { esql.executeQueryAndPrintResult("SELECT C.make, C.model, C.year FROM Car C, Service_Request S WHERE C.vin = S.car_vin AND C.year < 1995 AND S.odometer < 50000;"); }
 		catch(SQLException e) { System.out.println("Error With Request: " + e.toString()); }
 	}
-	
+	/* ListKCarsWithTheMostServices FUNCTION DESCRIPTION
+	 *	Function: 	ListKCarsWithTheMostServices
+	 *	Author: 	Krischin Layon
+	 *	Input:		MechanicShop esql
+	 * 	Output:		void
+	*/
 	public static void ListKCarsWithTheMostServices(MechanicShop esql){//9
-		//
+		
+		/*
+		SELECT
+			Car.make,
+			Car.model,
+			Car.year,
+			Service_Request.car_vin,
+			COUNT(Service_Request.car_vin) as requests
+		FROM Car, Service_Request 
+		WHERE Car.vin = Service_Request.car_vin
+		GROUP BY
+			car.make,
+			car.model,
+			car.year,
+			Service_Request.car_vin
+		ORDER BY requests DESC
+		LIMIT " + Integer.toString(k) + ";"
+		*/
+
+		int k; String catchTest;
+		Scanner input = new Scanner (System.in);
+
+		System.out.println("How many cars do you want to find?: "); k = input.nextInt();  catchTest = input.nextLine();
+		if (k > 0){
+			try {
+				esql.executeQueryAndPrintResult("SELECT Car.make, Car.model, Car.year, Service_Request.car_vin, COUNT(Service_Request.car_vin) as requests FROM Car, Service_Request WHERE Car.vin = Service_Request.car_vin GROUP BY car.make, car.model, car.year, Service_Request.car_vin ORDER BY requests DESC LIMIT " + Integer.toString(k) + ";");
+			} catch (SQLException e){
+				System.out.println("Error with Request: " + e.toString());
+			}
+		}
 		
 	}
-	
+
+	/* ListCustomersInDescendingOrderOfTheirTotalBill FUNCTION DESCRIPTION
+	 *	Function: 	ListCustomersInDescendingOrderOfTheirTotalBill
+	 *	Author: 	Krischin Layon
+	 *	Input:		MechanicShop esql
+	 * 	Output:		void
+	*/
 	public static void ListCustomersInDescendingOrderOfTheirTotalBill(MechanicShop esql){//10
-		//
+		/*
+			SELECT
+				Customer.fname,
+				Customer.lname,
+				Customer.id as c_id,
+				SUM(Closed_Request_bill) as total_bill
+			FROM Customer,Service_Request, Closed_Request
+			WHERE
+				Customer.id = Service_Request.customer_id
+				AND
+				Closed_Request.rid = Service_Request.rid
+			GROUP BY
+				Customer.fname,
+				Customer.lname,
+				Customer.id
+			ORDER BY total_bill DESC
+			LIMIT 10;
+		*/
+		try {
+			esql.executeQueryAndPrintResult("SELECT Customer.fname, Customer.lname, Customer.id as c_id, SUM(Closed_Request.bill) as total_bill FROM Customer,Service_Request, Closed_Request WHERE Customer.id = Service_Request.customer_id AND Closed_Request.rid = Service_Request.rid GROUP BY Customer.fname, Customer.lname, Customer.id ORDER BY total_bill DESC LIMIT 10;");
+		} catch (SQLException e){
+			System.out.println("Error with Request: " + e.toString());
+		}
 		
 	}
 	
@@ -649,6 +817,13 @@ public class MechanicShop{
 	/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 	/* Helper Functions Written By: Krischin Layon                                                                   */
 	/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+	
+	/* AddAndReturnCar FUNCTION DESCRIPTION
+	 *	Function: 	AddAndReturnCar
+	 *	Author: 	Krischin Layon
+	 *	Input:		void
+	 * 	Output:		List<String>
+	*/
 	public static List<String> AddAndReturnCar(MechanicShop esql) throws SQLException {
 		/* VARIABLES USED: CAR */
 		String vin = "",
@@ -671,6 +846,39 @@ public class MechanicShop{
 		try { esql.executeUpdate("INSERT INTO Car (vin, make, model, year) VALUES (" + q + ");"); }
 		catch(SQLException e) { System.out.println("Invalid Input: " + e.toString()); }
 		
+		return record;
+	}
+
+	/* AddAndReturnCustomer FUNCTION DESCRIPTION
+	 *	Function: 	AddAndReturnCustomer
+	 *	Author: 	Krischin Layon
+	 *	Input:		void
+	 * 	Output:		List<String>
+	*/
+	public static List<String> AddAndReturnCustomer(MechanicShop esql) throws SQLException {//1
+		/* VARIABLES USED: CUSTOMER */
+		int id = 0;
+		String fname = "",
+		        lname = "",
+		         phone = "",
+				  address = "",
+				   catchTest = "";
+		Scanner input = new Scanner(System.in);
+		List<String> record = new ArrayList<String>();
+		
+		/* VARIABLE INITIALIZATION <:NOTES:> *catchTest variable used after nextInt to catch '\n' (hooray for brute force)* */
+		System.out.print("Enter Customer ID: ");         id = input.nextInt(); catchTest = input.nextLine(); record.add(Integer.toString(id));
+		System.out.print("Enter Customer First Name: "); fname = input.nextLine(); record.add(fname);
+		System.out.print("Enter Customer Last Name: ");	 lname = input.nextLine(); record.add(lname);
+		System.out.print("Enter Customer Phone #: ");    phone = input.nextLine(); record.add(phone);
+		System.out.print("Enter Customer Address: ");    address = input.nextLine(); record.add(address);
+
+		String q = Integer.toString(id) + ',' + '\'' + fname + '\'' + ',' + '\'' + lname + '\'' + ',' + '\'' + phone + '\'' + ',' + '\'' + address + "\'";
+		
+		/* PSQL CUSTOMER TABLE DATA INSERTION */
+		try	{ esql.executeUpdate("INSERT INTO Customer (id, fname, lname, phone, address) VALUES (" + q + ");"); }
+		catch (SQLException e) { System.out.println("Invalid Input: " + e.toString()); }
+
 		return record;
 	}
 }
