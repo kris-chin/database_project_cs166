@@ -329,19 +329,61 @@ public class MechanicShop{
 		try	{ esql.executeUpdate("INSERT INTO Customer (id, fname, lname, phone, address) VALUES (" + q + ");"); }
 		catch (SQLException e) { System.out.println("Invalid Input: " + e.toString()); }
 	}
-
+	
+	/* ADD CUSTOMER FUNCTION DESCRIPTION
+	 *	Function: 	AddCustomer
+	 *	Author: 	Dominic Renales
+	 *	Input: 		MechanicShop esql
+	 *	Output: 	void
+	 *	Summary: 	Function that executes the pSQL query for adding an item to the Customer table.
+	 *	Code Flow:
+	 *		Line 1) Function is called and tries to perform execute function passing the string "INSERT INTO 
+	 *		the Customer table with values (id, first name, last name, phone #, and address)" plus 
+	 *		the input data obtained from the user from the GetCustomerInfo function.
+	 *		Line 2) If the pSQL query fails, the user will be prompted with "Invalid input:" plus the pSQL
+	 *		error message. Otherwise, the function skips this line signaling successful addition of new item
+	 * 		into the Customer table
+	*/
 	public static void AddCustomer(MechanicShop esql) throws SQLException {//1
 		/* PSQL CUSTOMER TABLE DATA INSERTION */
 		try	{ esql.executeUpdate("INSERT INTO Customer (id, fname, lname, phone, address) VALUES (" + GetCustomerInfo() + ");"); }
 		catch (SQLException e) { System.out.println("Invalid Input: " + e.toString()); }
 	}
 	
+	/* ADDMECHANIC FUNCTION DESCRIPTION
+	 *	Function:	AddMechanic
+	 *	Author:		Dominic Renales
+	 *	Input: 		MechanicShop esql
+	 * 	Output: 	void
+	 *  Summary:	Function that executes the pSQL query for adding an item to the Customer table.
+	 *  Code Flow: 	
+	 * 		Line 1) Function is called and tries to perform execute function passing the string "INSERT INTO
+	 * 		the Mechanic table with values (id, first name, last name, years of experience" plus the input
+	 * 		data obtained from the user from the GetMechanicInfo function.
+	 * 		Line 2) If the pSQL query fails the user will be prompted with "Invalid input:" plus the pSQL
+	 * 		error message. Otherwise, the function skips this line signaling successful addition of new item
+	 * 		into the Mechanic table.
+	*/
 	public static void AddMechanic(MechanicShop esql) throws SQLException {//2
 		/* PSQL MECHANIC DATA INSERTION */
 		try { esql.executeUpdate("INSERT INTO Mechanic (id, fname, lname, experience) VALUES (" + GetMechanicInfo() + ");"); }
 		catch(SQLException e) { System.out.println("Invalid Input: " + e.toString()); }
 	}
 	
+	/* ADDCAR FUNCTION DESCRIPTION
+	 *	Function: 	AddCar
+	 *	Author: 	Dominic Renales
+	 *	Input:		MechanicShop esql
+	 * 	Output:		void
+	 *  Summary:	Function that executes the pSQL query for adding an item to the Car table.
+	 *  Code Flow: 	
+	 * 		Line 1) Function is called and tries to perform execute function passing the string "INSERT INTO
+	 * 		the Car table with values (VIN #, make, model, and year)" plus the input data obtained from the
+	 * 		user from the GetCarInfo function. 
+	 * 		Line 2) If the pSQL query fails the user will be prompted with "Invalid input:" plus the pSQL
+	 * 		error message. Otherwise, the function skips this line signaling successful addition of the new 
+	 * 		item into the Car table.
+	*/
 	public static void AddCar(MechanicShop esql) throws SQLException {//3
 		/* PSQL CAR DATA INSERTION */
 		try { esql.executeUpdate("INSERT INTO Car (vin, make, model, year) VALUES (" + GetCarInfo() + ");"); }
@@ -499,14 +541,24 @@ public class MechanicShop{
 		
 	}
 	
-	public static void ListCustomersWithMoreThan20Cars(MechanicShop esql) throws SQLException{//7
-		try {
-		esql.executeQueryAndPrintResult("SELECT fname, lname " + 
-						"FROM Customer C " +
-						"WHERE 20 < (SELECT COUNT(O.customer_id) " +
-							    "FROM OWNS O " +
-							    "WHERE C.id = O.customer_id);");
-		}
+	/* LISTCUSTOMERSWITHMORETHAN20CARS FUNCTION DESCRIPTION
+	 *	Function: 	ListCustomersWithMoreThan20Cars
+	 *	Author: 	Dominic Renales
+	 *	Input:		MechanicShop esql
+	 * 	Output:		void
+	 *  Summary:	Function that executes the pSQL query to print all customers in the table with more than 20 cars.
+	 *  Code Flow: 	 
+	 * 		Line 1) Function tries to execute and print the results of the following pSQL query:
+	 * 			SELECT fname, lname
+	 * 			FROM Customer C
+	 * 			WHERE 20 < (SELECT COUNT(O.customer_id)
+	 * 						FROM OWNS O
+	 * 						WHERE C.id = O.customer_id).
+	 * 		Line 2) If the pSQL query fails the user will be prompted with "Error with request" plus the pSQL
+	 * 		error message. Otherwise, the function displays all customers that fit the relational query criteria.
+	*/
+	public static void ListCustomersWithMoreThan20Cars(MechanicShop esql)  throws SQLException {//7
+		try { esql.executeQueryAndPrintResult("SELECT fname, lname FROM Customer C WHERE 20 < (SELECT COUNT(O.customer_id) FROM OWNS O WHERE C.id = O.customer_id);"); }
 		catch(SQLException e) { System.out.println("Error With Request: " + e.toString()); }
 	}
 	
@@ -526,6 +578,21 @@ public class MechanicShop{
 	
 	/* AUXILLARY FUNCTIONS FOR I/O */
 
+	/* GETCUSTOMERINFO FUNCTION DESCRIPTION
+	 *	Function: 	GetCustomerInfo
+	 *	Author: 	Dominic Renales
+	 *	Input:		void
+	 * 	Output:		String
+	 *  Summary:	Function that returns a string from the user input for Customer table
+	 *  Code Flow: 	
+	 * 		Line 1-7) Necessary variables for the customer table are declared and initialized. 
+	 * 		Line 8) Prompts user to input the customer's ID and assigns that input to the "id" variable. 
+	 * 		Line 9) Prompts user to input the customer's first name and assigns that input to the "fname" variable.
+	 * 		Line 10) Prompts user to input the customer's last name and assigns that input to the "lname" variable.
+	 * 		Line 11) Prompts the user to input the customer's phone number and assigns that input to the "phone" variable.
+	 * 		Line 12) Prompts the user to input the customer's address and assigns that input to the "address" variable.
+	 * 		Line 13) Returns the string in the following format: "(id),'(fname)','(lname)','(phone)','(address)'".
+	*/
 	public static String GetCustomerInfo() {
 		/* VARIABLES USED: CUSTOMER */
 		int id = 0;
@@ -546,6 +613,20 @@ public class MechanicShop{
 		return Integer.toString(id) + ',' + '\'' + fname + '\'' + ',' + '\'' + lname + '\'' + ',' + '\'' + phone + '\'' + ',' + '\'' + address + "\'";
 	}
 
+	/* GETMECHANICINFO FUNCTION DESCRIPTION
+	 *	Function: 	GetMechanicInfo
+	 *	Author: 	Dominic Renales
+	 *	Input:		MechanicShop esql
+	 * 	Output:		void
+	 *  Summary:	Function that returns a string from the user input for Mechanic table
+	 *  Code Flow: 	 
+	 * 		Line 1-6) Necessary info for the Mechanic table are declared and initialized.
+	 * 		Line 7) Prompts the user to input the Mechanic's ID and assigns that to the "id" variable.
+	 * 		Line 8) Prompts the user to input the Mechanic's first name and assigns that to the "fname" variable.
+	 * 		Line 9) Prompts the user to input the Mechanic's last name and assigns that to the "lname" variable.
+	 * 		Line 10) Prompts the user to input the Mechanic's years of experience and assigns that to the "years" variable.
+	 * 		Line 11) Returns the string in the following format: "(id),'(fname)','(lname)',years".
+	*/
 	public static String GetMechanicInfo() {
 		/* VARIABLES USED: MECHANIC */
 		int id = 0,
@@ -564,6 +645,20 @@ public class MechanicShop{
 		return Integer.toString(id) + ",\'" + fname + "\',\'" + lname + "\'," + years;
 	}
 
+	/* GETCARINFO FUNCTION DESCRIPTION
+	 *	Function: 	GetCarInfo
+	 *	Author: 	Dominic Renales
+	 *	Input:		void
+	 * 	Output:		String
+	 *  Summary:	Function that returns a string from the user input for Car table 
+	 *  Code Flow: 	 
+	 * 		Line 1-5) Necessary info for Car table are declared and initialized.
+	 * 		Line 6) Prompts user to input the Car's VIN number and assigns that to the "vin" variable.
+	 * 		Line 7) Prompts the user to input the Car's make and assigns that to the "make" variable.
+	 * 		Line 8) Prompts the user to input the Car's model and assigns that to the "model" variable.
+	 * 		Line 9) Prompts the user to input the Car's year and assigns that to the "year" variable.
+	 * 		Line 10) Returns a string in the following format: "'(vin)','(make)','(model)',(year)". 
+	*/
 	public static String GetCarInfo() {
 		/* VARIABLES USED: CAR */
 		String vin = "",
