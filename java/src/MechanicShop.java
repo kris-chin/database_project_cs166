@@ -352,17 +352,63 @@ public class MechanicShop{
 	 * 	Output:		void
 	 *  	Summary:	Function that executes the pSQL query for adding an item to the Car table.
 	 *  	Code Flow: 	
-	 * 			Line 1) Function is called and tries to perform execute function passing the string "INSERT INTO
-	 * 			the Car table with values (VIN #, make, model, and year)" plus the input data obtained from the
-	 * 			user from the GetCarInfo function. 
-	 * 			Line 2) If the pSQL query fails the user will be prompted with "Invalid input:" plus the pSQL
-	 * 			error message. Otherwise, the function skips this line signaling successful addition of the new 
-	 * 			item into the Car table.
+	 * 			Line 1-7) Instantiation and declaration of necessary variables
+	 * 			Line 8) Prompts user for owner's first name and assigns that to variable fname
+	 * 			Line 9) Prompts user for owner's last name and assigns that to variable lname
+	 * 			Line 10) Executes pSQL query to retireve a list of customers ID, first name, last name, and phone where the first and last name are equivalent to fname, lname respectively
+	 * 			Line 11) If no customer exists, the user will be prompted to add the customer to the database before trying again
+	 * 			Line 13) Else if there is only one customer, the car information will be put into the database
+	 * 			Line 14) And then the "Owns" table will be updated to match the car with its respective user.
+	 * 			Line 15-22) Else the user will be prompted to select which customer they were actually trying to select  
+	 * 			Line 23) The appropriate customer id will be assigned to c_id
+	 * 			Line 24) The car information will be put into the database
+	 * 			Line 25) The "Owns" table will be updated to match the car with its respective user
 	*/
 	public static void AddCar(MechanicShop esql) throws SQLException {//3
+		/* VARIABLES USED: SEARCH CUSTOMER */
+		Scanner input = new Scanner(System.in);
+		String fname = "",
+				lname = "",
+				 carInfo = GetCarInfo(),
+				  vin = carInfo.substring(0,18);
+		int choiceInput = 0, c_id = 0;
+		List<List<String>> customerList = null;
+
 		/* PSQL CAR DATA INSERTION */
-		try { esql.executeUpdate("INSERT INTO Car (vin, make, model, year) VALUES (" + GetCarInfo(esql) + ");"); }
-		catch(SQLException e) { System.out.println("Invalid Input: " + e.toString()); }
+		//try { esql.executeUpdate("INSERT INTO Car (vin, make, model, year) VALUES (" + GetCarInfo(esql) + ");"); }
+		//catch(SQLException e) { System.out.println("Invalid Input: " + e.toString()); }
+
+		System.out.print("Enter the owner's first name: "); fname = input.nextLine();
+		System.out.print("Enter the owner's last name: ");  lname = input.nextLine();
+
+		try{
+			customerList = esql.executeQueryAndReturnResult("SELECT id, fname, lname, phone FROM Customer WHERE fname = \'" + fname + "\' AND lname = \'" + lname + "\';");
+			if(customerList.size() == 0) { System.out.println("Customer does not exist. Add customer to the database before trying again."); return; }
+			else if(customerList.size() == 1) {
+				esql.executeUpdate("INSERT INTO Car (vin, make, model, year) VALUES (" + carInfo + ");");
+				esql.executeUpdate("INSERT INTO Owns (ownership_id, customer_id, car_vin) VALUES (" + (GetHighestID(esql, "Owns", "ownership_id") + 1) + "," + customerList.get(0).get(0) + "," + vin + ");");
+			}
+			else {
+				System.out.println("Select a customer:");
+				for (int pos = 0; pos < customerList.size(); pos++){ 
+					String phone = customerList.get(pos).get(3).replaceAll("\\s",""); //
+					String ln = customerList.get(pos).get(2).replaceAll("\\s",""); //remove whitespace with regex
+					String fn = customerList.get(pos).get(1).replaceAll("\\s",""); //remove whitespace with regex
+					System.out.println(Integer.toString(pos) + ". " + ln + ", " + fn + ", " + phone);
+				}
+				//Wait for userinput to choose a customer
+				do {
+					choiceInput = readChoice();
+					if ( choiceInput < customerList.size() & ( choiceInput > -1) ) break;
+				} while (true);
+
+				c_id = Integer.parseInt(customerList.get(choiceInput).get(0));
+
+				esql.executeUpdate("INSERT INTO Car (vin, make, model, year) VALUES (" + GetCarInfo() + ");");
+				esql.executeUpdate("INSERT INTO Owns (ownership_id, customer_id, car_vin) VALUES " + (GetHighestID(esql, "Owns", "ownership_id") + 1) + "," + Integer.toString(c_id) + "," + vin + ");");
+			}
+		}
+		catch(SQLException e) { System.out.println("Error Processing: " + e.toString()); }
 	}
 	
 	/* InsertServiceRequest FUNCTION DESCRIPTION
