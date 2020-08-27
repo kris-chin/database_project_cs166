@@ -256,6 +256,8 @@ public class MechanicShop{
 				System.out.println("9. ListKCarsWithTheMostServices");
 				System.out.println("10. ListCustomersInDescendingOrderOfTheirTotalBill");
 				System.out.println("11. < EXIT");
+				System.out.println("12. PrintCustomerList");
+				System.out.println("13. PrintMechanicList");
 				
 				/*
 				 * FOLLOW THE SPECIFICATION IN THE PROJECT DESCRIPTION
@@ -272,6 +274,8 @@ public class MechanicShop{
 					case 9: ListKCarsWithTheMostServices(esql); break;
 					case 10: ListCustomersInDescendingOrderOfTheirTotalBill(esql); break;
 					case 11: keepon = false; break;
+					case 12: PrintCustomerList(esql); break;
+					case 13: PrintMechanicList(esql); break;
 				}
 			}
 		}catch(Exception e){
@@ -312,17 +316,42 @@ public class MechanicShop{
 	 *	Output: 	void
 	 *	Summary: 	Function that executes the pSQL query for adding an item to the Customer table.
 	 *	Code Flow:
-	 *			Line 1) Function is called and tries to perform execute function passing the string "INSERT INTO 
-	 *			the Customer table with values (id, first name, last name, phone #, and address)" plus 
-	 *			the input data obtained from the user from the GetCustomerInfo function.
-	 *			Line 2) If the pSQL query fails, the user will be prompted with "Invalid input:" plus the pSQL
-	 *			error message. Otherwise, the function skips this line signaling successful addition of new item
-	 * 			into the Customer table
+	 *			Line 1-4) Instantiating necessary variables
+	 *			Line 5) Tries to insert the information "customerInfo" into the customer table
+	 *			Line 6) If an error is caught it will prompt the user with the possible error
+	 *			Line 7) Instantiates carInfo with data input by the user
+	 *			Line 8) Sets the VIN# for use in the Owns table
+	 *			Line 9) Tries to insert the information "carInfo" into the Car table
+	 *			Line 10) Tries to insert the information on the relationship between car and owner
+	 *			Line 11) If an error is caught it will prompt the user with the possible error 
 	*/
 	public static void AddCustomer(MechanicShop esql) throws SQLException {//1
 		/* PSQL CUSTOMER TABLE DATA INSERTION */
-		try	{ esql.executeUpdate("INSERT INTO Customer (id, fname, lname, phone, address) VALUES (" + GetCustomerInfo(esql) + ");"); }
-		catch (SQLException e) { System.out.println("Invalid Input: " + e.toString()); }
+		String customerInfo = GetCustomerInfo(),
+				customerID = customerInfo.substring(0, customerInfo.indexOf(',')),
+				 carInfo = "",
+				  vin = "";
+
+		try	{ esql.executeUpdate("INSERT INTO Customer (id, fname, lname, phone, address) VALUES (" + customerInfo + ");"); }
+		catch (SQLException e) { 
+			System.out.println("Invalid Input: " + e.toString()); 
+			System.out.println("Hit Enter To Continue...");
+			try { System.in.read(); } catch(Exception e) {}
+			ClearScreen();
+			return;
+		}
+
+		carInfo = GetCarInfo();
+		vin = carInfo.substring(0,18);
+		try {
+			esql.executeUpdate("INSERT INTO Car (vin, make, model, year) VALUES (" + carInfo + ");"); 
+			esql.executeUpdate("INSERT INTO Owns (ownership_id, customer_id, car_vin) VALUES (" + (GetHighestID(esql, "Owns", "ownership_id") + 1) + "," + customerID + "," + vin + ");"); 
+		}
+		catch(SQLException e) { System.out.println("Error processing car request: " + e.toString() + "\nTry adding the car again."); }
+		
+		System.out.println("Hit Enter To Continue...");
+		try { System.in.read(); } catch(Exception e) {}
+		ClearScreen();
 	}
 	
 	/* ADDMECHANIC FUNCTION DESCRIPTION
@@ -343,6 +372,10 @@ public class MechanicShop{
 		/* PSQL MECHANIC DATA INSERTION */
 		try { esql.executeUpdate("INSERT INTO Mechanic (id, fname, lname, experience) VALUES (" + GetMechanicInfo(esql) + ");"); }
 		catch(SQLException e) { System.out.println("Invalid Input: " + e.toString()); }
+
+		System.out.println("Hit Enter To Continue...");
+		try { System.in.read(); } catch(Exception e) {}
+		ClearScreen();
 	}
 	
 	/* ADDCAR FUNCTION DESCRIPTION
@@ -383,7 +416,7 @@ public class MechanicShop{
 
 		try{
 			customerList = esql.executeQueryAndReturnResult("SELECT id, fname, lname, phone FROM Customer WHERE fname = \'" + fname + "\' AND lname = \'" + lname + "\';");
-			if(customerList.size() == 0) { System.out.println("Customer does not exist. Add customer to the database before trying again."); return; }
+			if(customerList.size() == 0) { System.out.println("Customer does not exist. Add customer to the database before trying again."); }
 			else if(customerList.size() == 1) {
 				esql.executeUpdate("INSERT INTO Car (vin, make, model, year) VALUES (" + carInfo + ");");
 				esql.executeUpdate("INSERT INTO Owns (ownership_id, customer_id, car_vin) VALUES (" + (GetHighestID(esql, "Owns", "ownership_id") + 1) + "," + customerList.get(0).get(0) + "," + vin + ");");
@@ -409,6 +442,10 @@ public class MechanicShop{
 			}
 		}
 		catch(SQLException e) { System.out.println("Error Processing: " + e.toString()); }
+
+		System.out.println("Hit Enter To Continue...");
+		try { System.in.read(); } catch(Exception e) {}
+		ClearScreen();
 	}
 	
 	/* InsertServiceRequest FUNCTION DESCRIPTION
@@ -563,6 +600,9 @@ public class MechanicShop{
 			catch(SQLException e) { System.out.println("Invalid Input: " + e.toString()); }
 		}
 		
+		System.out.println("Hit Enter To Continue...");
+		try { System.in.read(); } catch(Exception e) {}
+		ClearScreen();
 	}
 	/* CloseServiceRequest FUNCTION DESCRIPTION
 	 *	Function: 	CloseServiceRequest
@@ -658,7 +698,10 @@ public class MechanicShop{
 		System.out.println("Invalid inputs. Either the Request ID or Mechanic ID are non-existant, or your Request ID has already been closed.");
 	}
 
-	}
+	System.out.println("Hit Enter To Continue...");
+	try { System.in.read(); } catch(Exception e) {}
+	ClearScreen();
+}
 	/* ListCustomersWithBillLessThan100 FUNCTION DESCRIPTION
 	 *	Function: 	ListCustomersWithBillLessThan100
 	 *	Author: 	Krischin Layon
@@ -688,7 +731,10 @@ public class MechanicShop{
 		} catch (SQLException e){
 			System.out.println("Error with Request: " + e.toString());
 		}
-		
+
+		System.out.println("Hit Enter To Continue...");
+		try { System.in.read(); } catch(Exception e) {}
+		ClearScreen();
 	}
 	
 	/* LISTCUSTOMERSWITHMORETHAN20CARS FUNCTION DESCRIPTION
@@ -710,6 +756,10 @@ public class MechanicShop{
 	public static void ListCustomersWithMoreThan20Cars(MechanicShop esql)  throws SQLException {//7
 		try { esql.executeQueryAndPrintResult("SELECT fname, lname FROM Customer C WHERE 20 < (SELECT COUNT(O.customer_id) FROM OWNS O WHERE C.id = O.customer_id);"); }
 		catch(SQLException e) { System.out.println("Error With Request: " + e.toString()); }
+
+		System.out.println("Hit Enter To Continue...");
+		try { System.in.read(); } catch(Exception e) {}
+		ClearScreen();
 	}
 	
 	/* LISTCARSBEFORE1995WITH50000Miles FUNCTION DEFINITION
@@ -732,6 +782,10 @@ public class MechanicShop{
 	public static void ListCarsBefore1995With50000Miles(MechanicShop esql) throws SQLException {//8
 		try { esql.executeQueryAndPrintResult("SELECT C.make, C.model, C.year FROM Car C, Service_Request S WHERE C.vin = S.car_vin AND C.year < 1995 AND S.odometer < 50000;"); }
 		catch(SQLException e) { System.out.println("Error With Request: " + e.toString()); }
+
+		System.out.println("Hit Enter To Continue...");
+		try { System.in.read(); } catch(Exception e) {}
+		ClearScreen();
 	}
 	/* ListKCarsWithTheMostServices FUNCTION DESCRIPTION
 	 *	Function: 	ListKCarsWithTheMostServices
@@ -777,6 +831,9 @@ public class MechanicShop{
 			}
 		}
 		
+		System.out.println("Hit Enter To Continue...");
+		try { System.in.read(); } catch(Exception e) {}
+		ClearScreen();
 	}
 
 	/* ListCustomersInDescendingOrderOfTheirTotalBill FUNCTION DESCRIPTION
@@ -816,6 +873,9 @@ public class MechanicShop{
 			System.out.println("Error with Request: " + e.toString());
 		}
 		
+		System.out.println("Hit Enter To Continue...");
+		try { System.in.read(); } catch(Exception e) {}
+		ClearScreen();
 	}
 	
 	/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -932,6 +992,52 @@ public class MechanicShop{
 		return "\'" + vin + "\',\'" + make + "\',\'" + model + "\'," + Integer.toString(year);
 	}
 	
+	/*
+	 * Function: PrintCustomerList
+	 * Author: Dominic Renales
+	 * Input: MechanicShop
+	 * Output: None
+	 * Summary: Prints the id number and name of all customers
+	 * Code Flow:
+	 * 			Line 1) Tries to execute the following pSQL query
+	 * 				SELECT id, fname, lname
+	 * 				FROM Customer
+	 * 			Line 2) If an error is caught it will prompt the user
+	*/
+	public static void PrintCustomerList(MechanicShop esql) throws SQLException, Exception {
+		try { esql.executeQueryAndPrintResult("SELECT id, fname, lname FROM Customer;"); }
+		catch(SQLException e) { System.out.println("Error With Request: " + e.toString()); }
+
+		System.out.println("Hit Enter To Continue...");
+		try { System.in.read(); } catch(Exception e) {}
+		ClearScreen();
+	}
+
+	/*
+	 * Function: PrintCustomerList
+	 * Author: Dominic Renales
+	 * Input: MechanicShop
+	 * Output: None
+	 * Summary: Prints the id number and name of all customers
+	 * Code Flow:
+	 * 			Line 1) Tries to execute the following pSQL query
+	 * 				SELECT id, fname, lname
+	 * 				FROM Mechanic
+	 * 			Line 2) If an error is caught it will prompt the user
+	*/
+	public static void PrintMechanicList(MechanicShop esql) throws SQLException, Exception {
+		try { esql.executeQueryAndPrintResult("SELECT id, fname, lname FROM Mechanic;"); }
+		catch(SQLException e) { System.out.println("Error With Request: " + e.toString()); }
+
+		System.out.println("Hit Enter To Continue...");
+		try { System.in.read(); } catch(Exception e) {}
+		ClearScreen();
+	}
+
+	public static void ClearScreen() {   
+		System.out.print("\033[H\033[2J");   
+		System.out.flush();
+	}
 	/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 	/* Helper Functions Written By: Krischin Layon                                                                   */
 	/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
