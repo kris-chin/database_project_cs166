@@ -325,7 +325,7 @@ public class MechanicShop{
 	 *			Line 10) Tries to insert the information on the relationship between car and owner
 	 *			Line 11) If an error is caught it will prompt the user with the possible error 
 	*/
-	public static void AddCustomer(MechanicShop esql) throws SQLException {//1
+	public static void AddCustomer(MechanicShop esql) throws SQLException, Exception {//1
 		/* PSQL CUSTOMER TABLE DATA INSERTION */
 		String customerInfo = GetCustomerInfo(),
 				customerID = customerInfo.substring(0, customerInfo.indexOf(',')),
@@ -368,7 +368,7 @@ public class MechanicShop{
 	 * 			error message. Otherwise, the function skips this line signaling successful addition of new item
 	 * 			into the Mechanic table.
 	*/
-	public static void AddMechanic(MechanicShop esql) throws SQLException {//2
+	public static void AddMechanic(MechanicShop esql) throws SQLException, Exception {//2
 		/* PSQL MECHANIC DATA INSERTION */
 		try { esql.executeUpdate("INSERT INTO Mechanic (id, fname, lname, experience) VALUES (" + GetMechanicInfo(esql) + ");"); }
 		catch(SQLException e) { System.out.println("Invalid Input: " + e.toString()); }
@@ -397,7 +397,7 @@ public class MechanicShop{
 	 * 			Line 24) The car information will be put into the database
 	 * 			Line 25) The "Owns" table will be updated to match the car with its respective user
 	*/
-	public static void AddCar(MechanicShop esql) throws SQLException {//3
+	public static void AddCar(MechanicShop esql) throws SQLException, Exception {//3
 		/* VARIABLES USED: SEARCH CUSTOMER */
 		Scanner input = new Scanner(System.in);
 		String fname = "",
@@ -462,7 +462,7 @@ public class MechanicShop{
 	 * 			Phase 3) Using the Customer's ID, the Car's VIN, and the Service Request information. Run the insertion query.
 	 * 					 We include error handling for if the query fails. 
 	*/
-	public static void InsertServiceRequest(MechanicShop esql) throws SQLException{//4
+	public static void InsertServiceRequest(MechanicShop esql) throws SQLException, Exception {//4
 		//---------Phase 1: Collect Variables---------
 
 		//VARIABLES: Customer
@@ -618,7 +618,7 @@ public class MechanicShop{
 	 * 			Phase 3) Given the RID, MID, date, and additional information, runs the insertion query.
 	 * 					 We've included error handling if the query fails.
 	*/
-	public static void CloseServiceRequest(MechanicShop esql) throws Exception{//5
+	public static void CloseServiceRequest(MechanicShop esql) throws SQLException, Exception{//5
 	//---------Phase 1: Collect and Validate RID & Mechanic ID---------
 		
 		//VARIABLES: existing request
@@ -711,7 +711,7 @@ public class MechanicShop{
 	 * 		Code Flow:
 	 * 			-
 	*/
-	public static void ListCustomersWithBillLessThan100(MechanicShop esql){//6
+	public static void ListCustomersWithBillLessThan100(MechanicShop esql) throws SQLException, Exception {//6
 		try {
 			//the prompt asks for both "date, comment & bill" as well as "customers". so i will be doing both
 			//we need to remove the whitespace in the names when using this function
@@ -753,7 +753,7 @@ public class MechanicShop{
 	 * 			Line 2) If the pSQL query fails the user will be prompted with "Error with request" plus the pSQL
 	 * 			error message. Otherwise, the function displays all customers that fit the relational query criteria.
 	*/
-	public static void ListCustomersWithMoreThan20Cars(MechanicShop esql)  throws SQLException {//7
+	public static void ListCustomersWithMoreThan20Cars(MechanicShop esql) throws SQLException, Exception {//7
 		try { esql.executeQueryAndPrintResult("SELECT fname, lname FROM Customer C WHERE 20 < (SELECT COUNT(O.customer_id) FROM OWNS O WHERE C.id = O.customer_id);"); }
 		catch(SQLException e) { System.out.println("Error With Request: " + e.toString()); }
 
@@ -779,7 +779,7 @@ public class MechanicShop{
 	 * 			error message. Otherwise, the function displays make, model, year of all cars before 1995 with less than
 	 * 			50000 miles on the odometer.
 	 */
-	public static void ListCarsBefore1995With50000Miles(MechanicShop esql) throws SQLException {//8
+	public static void ListCarsBefore1995With50000Miles(MechanicShop esql) throws SQLException, Exception {//8
 		try { esql.executeQueryAndPrintResult("SELECT C.make, C.model, C.year FROM Car C, Service_Request S WHERE C.vin = S.car_vin AND C.year < 1995 AND S.odometer < 50000;"); }
 		catch(SQLException e) { System.out.println("Error With Request: " + e.toString()); }
 
@@ -799,7 +799,7 @@ public class MechanicShop{
 	 * 			-Executes the SQL query
 	 * 			-Includes error handling
 	*/
-	public static void ListKCarsWithTheMostServices(MechanicShop esql){//9
+	public static void ListKCarsWithTheMostServices(MechanicShop esql) throws SQLException, Exception {//9
 		
 		/*
 		SELECT
@@ -848,7 +848,7 @@ public class MechanicShop{
 	 * 			-Runs query
 	 * 			-Includes error handling
 	*/
-	public static void ListCustomersInDescendingOrderOfTheirTotalBill(MechanicShop esql){//10
+	public static void ListCustomersInDescendingOrderOfTheirTotalBill(MechanicShop esql) throws SQLException, Exception {//10
 		/*
 			SELECT
 				Customer.fname,
