@@ -28,7 +28,7 @@ For more details and information regarding the project refer to [this link](http
 7) source run.sh ${LOGNAME}_DB 9998 $LOGNAME 
 
 - Project Use:
-8) Refer to project details here: 
+8) Follow prompts listed in application.
 
 - Shut Down Project:
 9) cd ../postgresql/
