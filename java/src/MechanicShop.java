@@ -327,7 +327,7 @@ public class MechanicShop{
 	*/
 	public static void AddCustomer(MechanicShop esql) throws SQLException, Exception {//1
 		/* PSQL CUSTOMER TABLE DATA INSERTION */
-		String customerInfo = GetCustomerInfo(),
+		String customerInfo = GetCustomerInfo(esql),
 				customerID = customerInfo.substring(0, customerInfo.indexOf(',')),
 				 carInfo = "",
 				  vin = "";
@@ -336,12 +336,12 @@ public class MechanicShop{
 		catch (SQLException e) { 
 			System.out.println("Invalid Input: " + e.toString()); 
 			System.out.println("Hit Enter To Continue...");
-			try { System.in.read(); } catch(Exception e) {}
+			try { System.in.read(); } catch(Exception e2) {}
 			ClearScreen();
 			return;
 		}
 
-		carInfo = GetCarInfo();
+		carInfo = GetCarInfo(esql);
 		vin = carInfo.substring(0,18);
 		try {
 			esql.executeUpdate("INSERT INTO Car (vin, make, model, year) VALUES (" + carInfo + ");"); 
@@ -402,7 +402,7 @@ public class MechanicShop{
 		Scanner input = new Scanner(System.in);
 		String fname = "",
 				lname = "",
-				 carInfo = GetCarInfo(),
+				 carInfo = GetCarInfo(esql),
 				  vin = carInfo.substring(0,18);
 		int choiceInput = 0, c_id = 0;
 		List<List<String>> customerList = null;
@@ -437,7 +437,7 @@ public class MechanicShop{
 
 				c_id = Integer.parseInt(customerList.get(choiceInput).get(0));
 
-				esql.executeUpdate("INSERT INTO Car (vin, make, model, year) VALUES (" + GetCarInfo() + ");");
+				esql.executeUpdate("INSERT INTO Car (vin, make, model, year) VALUES (" + GetCarInfo(esql) + ");");
 				esql.executeUpdate("INSERT INTO Owns (ownership_id, customer_id, car_vin) VALUES " + (GetHighestID(esql, "Owns", "ownership_id") + 1) + "," + Integer.toString(c_id) + "," + vin + ");");
 			}
 		}
